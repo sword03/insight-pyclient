@@ -87,6 +87,39 @@ class InsightApi(object):
                 wait_time = self.max_wait_time
             return self.make_request(url, wait_time, expected_http_return)
 
+    def make_post_request(self, url, wait_time=1, expected_http_return=200, data=None):
+        """
+        Allows to make get request to the API. It can make usage of the try hard option that allows to continue making \
+        requests util is get
+        @param url: The url to request
+        @param wait_time: The time (seconds) to wait before making another request if the try_hard option is enabled
+        @type wait_time: Int
+        @param expected_http_return: Allows to throw an exception if the http return code is not equal to it
+        @type expected_http_return: int
+        @return: The result given by the request module
+        """
+        try:
+            if self.digestAuth:
+                res = requests.post(self.address + url, data=data, timeout=self.timeout, auth=(self.userName, self.password))
+            elif self.basicAuth:
+                res = requests.post(self.address + url, data=data, timeout=self.timeout, auth=HTTPDigestAuth(self.userName, self.password))
+            else:
+                res = requests.post(self.address + url, data=data, timeout=self.timeout)
+            if res.status_code != expected_http_return:
+                raise APIException("Wrong status code", res.status_code, res.text, url)
+            return res
+        except Exception as ex:
+            if not self.try_hard:
+                raise ex
+            if self.verbose_try_hard:
+                print(traceback.format_exc())
+                print('Waiting ' + str(wait_time) + ' seconds before next request.')
+            time.sleep(wait_time)
+            wait_time *= self.time_multiplier
+            if wait_time > self.max_wait_time:
+                wait_time = self.max_wait_time
+            return self.make_request(url, wait_time, expected_http_return)
+
     def get_block(self, block_hash):
         """
         @param block_hash: The hash of the block to get
@@ -339,3 +372,18 @@ class InsightApi(object):
                 if sum >= amount_sat:
                     break
         return ret
+
+
+    def send_raw_transaction(self, raw_transaction):
+        """
+        @param raw_transaction
+        @type raw_transaction: string
+        @return: The hash id of the raw transactions
+        @rtype: txid
+        """
+        request_string = 'tx/send'
+        request_data = {'rawtx': raw_transaction}
+        res = self.make_post_request(url=request_string, data=request_data)
+        parsed = json.loads(res.text)
+        return parsed['txid']
+
