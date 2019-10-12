@@ -37,6 +37,7 @@ more details. The following content will just list the prototypes
 * `Int/Float get_address_unconfirmed_balance(String address, Boolean inSatoshis=False)`
 * `[UnspentOutput] get_unsent_output_for_many(String[] addresses)`
 * `[UnspentOutput] get_unsent_outputs(String address)`
+* `[UnspentOutput] get_unsent_outputs_ex(String address, Float amount=0)`
 * `[Transaction], totalReturned, returnedFrom, returnedTo get_transaction_for_addresses(String[] addresses, int transaction_from=None, int transaction_to=None)`
 * `[Transaction] get_all_transactions_for_address(String address)`
 
