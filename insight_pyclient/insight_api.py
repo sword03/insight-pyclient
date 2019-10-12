@@ -307,3 +307,35 @@ class InsightApi(object):
         if tx_to >= total:
             return transactions
         return transactions + self.get_all_transactions_for_address(address, tx_from + 50, tx_to + 50)
+
+
+    # extra function to get unspent_outputs
+    def get_unsent_outputs_ex(self, address, amount=0.0):
+        '''
+        if amount = 0, return all unspent outputs
+        if amount > 0, return enough unspent outputs
+        :param address:
+        :param amount:
+        :return:
+        '''
+        amount_sat = bitcoin_to_satoshi(amount)
+        utxos = self.get_unsent_outputs(address)
+
+        # sort
+        def get_key(elem):
+            return elem.satoshis
+        utxos.sort(key=get_key)
+
+        ret = []
+        if amount == 0:
+            # return all utxos
+            ret = utxos
+        else:
+            # return enough utxos
+            sum = 0
+            for u in utxos:
+                sum += u.satoshis
+                ret.append(u)
+                if sum >= amount_sat:
+                    break
+        return ret

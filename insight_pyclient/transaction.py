@@ -23,7 +23,6 @@ class TransactionInput(object):
     @type value: Float
     @type doubleSpentTxID: nullable (string ?)
     """
-
     def __init__(self, parsed_json):
         self.txid = parsed_json["txid"]
         self.vout = parsed_json["vout"]
@@ -35,6 +34,12 @@ class TransactionInput(object):
         self.doubleSpentTxID = parsed_json["doubleSpentTxID"]
         self.scriptSigAsm = parsed_json["scriptSig"]["asm"]
         self.scriptSigHex = parsed_json["scriptSig"]["hex"]
+
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s
 
 
 class TransactionOutput(object):
@@ -48,14 +53,14 @@ class TransactionOutput(object):
     @type spentHeight: int
     @type scriptPubKey: TransactionOutput.ScriptPublicKey
     """
-
     def __init__(self, parsed_json):
         self.value = float(parsed_json["value"])
         self.n = parsed_json["n"]
         self.spentTxId = parsed_json["spentTxId"]
         self.spentIndex = parsed_json["spentIndex"]
         self.spentHeight = parsed_json["spentHeight"]
-        self.scriptPubKey = TransactionOutput.ScriptPublicKey(parsed_json["scriptPubKey"])
+        self.scriptPubKey = TransactionOutput.ScriptPublicKey(
+            parsed_json["scriptPubKey"])
 
     class ScriptPublicKey(object):
         """
@@ -65,12 +70,17 @@ class TransactionOutput(object):
         @type addresses = [String]
         @type type: String
         """
-
         def __init__(self, parsed_json):
             self.hex = parsed_json["hex"]
             self.asm = parsed_json["asm"]
             self.addresses = parsed_json["addresses"]
             self.type = parsed_json["type"]
+
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s
 
 
 class Transaction(object):
@@ -90,7 +100,6 @@ class Transaction(object):
     @type inputs: [Input]
     @type outputs: [Output]
     """
-
     def __init__(self, string_json, already_parsed=False):
         """
         :param string_json: The string to parse
@@ -135,3 +144,9 @@ class Transaction(object):
             if address in out.scriptPubKey.addresses:
                 total += out.value
         return total
+
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s

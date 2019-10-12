@@ -26,7 +26,6 @@ class Address(object):
     @type txAppearances: int
     @type transactions: [String]
     """
-
     def __init__(self, string_json):
         parsed = json.loads(string_json)
         self.address = parsed["addrStr"]
@@ -45,6 +44,12 @@ class Address(object):
         else:
             self.transactions = None
 
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s
+
 
 class UnspentOutput(object):
     """
@@ -59,7 +64,6 @@ class UnspentOutput(object):
     @type ts: Int (Nullable)
     @type height: Int (Nullable)
     """
-
     def __init__(self, parsed_json):
         self.address = parsed_json['address']
         self.txid = parsed_json['txid']
@@ -76,3 +80,9 @@ class UnspentOutput(object):
             self.height = parsed_json["height"]
         else:
             self.height = None
+
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s

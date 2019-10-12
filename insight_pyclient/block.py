@@ -53,50 +53,51 @@ class Block(object):
     it is the case. If the class was instantiated empty, will be null.
     @type partOfSummary: nullable Boolean
     """
+    def __init__(self, json_string=''):
+        if len(json_string) == 0:
+            self.hash = ""
+            self.size = 0
+            self.height = 0
+            self.version = 0
+            self.tx = []
+            self.time = datetime.datetime(1000, 1, 1)
+            self.nonce = 0
+            self.bits = ""
+            self.difficulty = 0
+            self.chainWork = ""
+            self.confirmations = 0
+            self.previousBlockHash = ""
+            self.nextBlockHash = ""
+            self.reward = 0
+            self.isMainChain = False
+            self.poolName = ""
+            self.poolUrl = ""
+            self.partOfSummary = False
+            self.txLength = 0
+        else:
+            parsed = json.loads(json_string)
+            self.hash = parsed["hash"]
+            self.size = parsed["size"]
+            self.height = parsed["height"]
+            self.version = parsed["version"]
+            self.tx = parsed["tx"]
+            self.time = datetime.datetime.fromtimestamp(parsed['time'])
+            self.nonce = parsed["nonce"]
+            self.bits = parsed["bits"]
+            self.difficulty = parsed["difficulty"]
+            self.chainWork = parsed["chainwork"]
+            self.confirmations = parsed["confirmations"]
+            self.previousBlockHash = parsed["previousblockhash"]
+            self.nextBlockHash = parsed["nextblockhash"]
+            self.reward = parsed["reward"]
+            self.isMainChain = parsed["isMainChain"]
+            #self.poolName = parsed["poolInfo"]["poolName"]
+            #self.poolUrl = parsed["poolInfo"]["url"]
+            self.poolName = ""
+            self.poolUrl = ""
 
-    def __init__(self, json_string):
-        parsed = json.loads(json_string)
-        self.hash = parsed["hash"]
-        self.size = parsed["size"]
-        self.height = parsed["height"]
-        self.version = parsed["version"]
-        self.tx = parsed["tx"]
-        self.time = datetime.datetime.fromtimestamp(parsed['time'])
-        self.nonce = parsed["nonce"]
-        self.bits = parsed["bits"]
-        self.difficulty = parsed["difficulty"]
-        self.chainWork = parsed["chainwork"]
-        self.confirmations = parsed["confirmations"]
-        self.previousBlockHash = parsed["previousblockhash"]
-        self.nextBlockHash = parsed["nextblockhash"]
-        self.reward = parsed["reward"]
-        self.isMainChain = parsed["isMainChain"]
-        self.poolName = parsed["poolInfo"]["poolName"]
-        self.poolUrl = parsed["poolInfo"]["url"]
-
-        self.partOfSummary = False
-        self.txLength = 0
-
-    def __init__(self):
-        self.hash = ""
-        self.size = 0
-        self.height = 0
-        self.version = 0
-        self.tx = []
-        self.time = datetime.datetime(1000, 1, 1)
-        self.nonce = 0
-        self.bits = ""
-        self.difficulty = 0
-        self.chainWork = ""
-        self.confirmations = 0
-        self.previousBlockHash = ""
-        self.nextBlockHash = ""
-        self.reward = 0
-        self.isMainChain = False
-        self.poolName = ""
-        self.poolUrl = ""
-        self.partOfSummary = False
-        self.txLength = 0
+            self.partOfSummary = False
+            self.txLength = 0
 
     def parse_summary(self, loaded_json):
         """
@@ -115,6 +116,12 @@ class Block(object):
             if "url" in loaded_json["poolInfo"]:
                 self.poolUrl = loaded_json["poolInfo"]["url"]
 
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s
+
 
 class BlockSummaryPagination(object):
     """
@@ -127,18 +134,26 @@ class BlockSummaryPagination(object):
     @type more: Boolean
     @type moreTs: int
     """
-
     def __init__(self, parsed_json):
         if "next" in parsed_json and parsed_json["next"] is not "":
-            self.nextDate = datetime.datetime.strptime(parsed_json["next"], "%Y-%m-%d").strftime("%d-%m-%Y")
+            self.nextDate = datetime.datetime.strptime(
+                parsed_json["next"], "%Y-%m-%d").strftime("%d-%m-%Y")
         else:
             self.nextDate = None
         if "prev" in parsed_json and parsed_json["prev"] is not "":
-            self.prevDate = datetime.datetime.strptime(parsed_json["prev"], "%Y-%m-%d").strftime("%d-%m-%Y")
+            self.prevDate = datetime.datetime.strptime(
+                parsed_json["prev"], "%Y-%m-%d").strftime("%d-%m-%Y")
         else:
             self.prevDate = None
         self.currentTs = parsed_json["currentTs"]
-        self.currentDate = datetime.datetime.strptime(parsed_json["current"], "%Y-%m-%d").strftime("%d-%m-%Y")
+        self.currentDate = datetime.datetime.strptime(
+            parsed_json["current"], "%Y-%m-%d").strftime("%d-%m-%Y")
         self.isToday = parsed_json["isToday"]
         self.more = parsed_json["more"]
         self.moreTs = parsed_json["moreTs"]
+
+    def __str__(self):
+        s = '\n[' + type(self).__name__ + ']\n'
+        s += '\n'.join('    {0}:{1}'.format(key, value)
+                       for key, value in self.__dict__.items())
+        return s
