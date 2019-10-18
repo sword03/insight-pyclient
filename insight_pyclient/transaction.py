@@ -24,16 +24,24 @@ class TransactionInput(object):
     @type doubleSpentTxID: nullable (string ?)
     """
     def __init__(self, parsed_json):
-        self.txid = parsed_json["txid"]
-        self.vout = parsed_json["vout"]
-        self.sequence = parsed_json["sequence"]
-        self.n = parsed_json["n"]
-        self.addr = parsed_json["addr"]
-        self.valueSat = parsed_json["valueSat"]
-        self.value = parsed_json["value"]
-        self.doubleSpentTxID = parsed_json["doubleSpentTxID"]
-        self.scriptSigAsm = parsed_json["scriptSig"]["asm"]
-        self.scriptSigHex = parsed_json["scriptSig"]["hex"]
+        if 'coinbase' in parsed_json.keys():
+            self.coinbase = parsed_json['coinbase']
+            self.sequence = parsed_json['sequence']
+            self.n = parsed_json['n']
+        else:
+            self.txid = parsed_json["txid"]
+            self.vout = parsed_json["vout"]
+            self.sequence = parsed_json["sequence"]
+            self.n = parsed_json["n"]
+            self.addr = parsed_json["addr"]
+            self.valueSat = parsed_json["valueSat"]
+            self.value = parsed_json["value"]
+            self.doubleSpentTxID = parsed_json["doubleSpentTxID"]
+            self.scriptSigAsm = parsed_json["scriptSig"]["asm"]
+            self.scriptSigHex = parsed_json["scriptSig"]["hex"]
+
+    def is_coinbase(self):
+        return hasattr(self, 'coinbase')
 
     def __str__(self):
         s = '\n[' + type(self).__name__ + ']\n'
@@ -73,8 +81,13 @@ class TransactionOutput(object):
         def __init__(self, parsed_json):
             self.hex = parsed_json["hex"]
             self.asm = parsed_json["asm"]
-            self.addresses = parsed_json["addresses"]
-            self.type = parsed_json["type"]
+            if 'addresses' in parsed_json.keys():
+                self.addresses = parsed_json["addresses"]
+            if 'type' in parsed_json.keys():
+                self.type = parsed_json["type"]
+
+    def include_address(self):
+        return hasattr(self.scriptPubKey, 'addresses')
 
     def __str__(self):
         s = '\n[' + type(self).__name__ + ']\n'
@@ -118,8 +131,12 @@ class Transaction(object):
         self.time = datetime.datetime.fromtimestamp(parsed['time'])
         self.valueOut = parsed["valueOut"]
         self.size = parsed["size"]
-        self.valueIn = parsed["valueIn"]
-        self.fees = parsed["fees"]
+        #
+        if 'valueIn' in parsed.keys():
+            self.valueIn = parsed["valueIn"]
+        #
+        if 'fees' in parsed.keys():
+            self.fees = parsed["fees"]
         self.inputs = []
         self.outputs = []
 

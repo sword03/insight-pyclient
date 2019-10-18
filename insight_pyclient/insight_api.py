@@ -387,3 +387,16 @@ class InsightApi(object):
         parsed = json.loads(res.text)
         return parsed['txid']
 
+
+    def get_height(self):
+        """
+        @param address: The address we wish to get details from
+        @type address: String
+        @param in_satoshis: If we want to get the result in Satoshis, False by default
+        @type in_satoshis: Boolean
+        @return: Returns the total unconfirmed balance for the address
+        @rtype: Float if we returns Bitcoins, else Int
+        """
+        res = self.make_request('status')
+        parsed = json.loads(res.text)
+        return parsed['info']['blocks']
