@@ -137,6 +137,8 @@ class Transaction(object):
         #
         if 'fees' in parsed.keys():
             self.fees = parsed["fees"]
+        else:
+            self.fees = 0
         self.inputs = []
         self.outputs = []
 
@@ -155,10 +157,10 @@ class Transaction(object):
         """
         total = 0
         for inp in self.inputs:
-            if inp.addr == address:
+            if not inp.is_coinbase() and inp.addr == address:
                 total -= inp.value
         for out in self.outputs:
-            if address in out.scriptPubKey.addresses:
+            if out.include_address() and address in out.scriptPubKey.addresses:
                 total += out.value
         return total
 
