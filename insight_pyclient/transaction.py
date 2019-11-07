@@ -129,6 +129,8 @@ class Transaction(object):
         if 'blockHash' in parsed.keys():
             # if confirmed
             self.blockHash= parsed["blockhash"]
+        else:
+            self.blockHash = ""
         # -1 if not confirmed
         self.blockHeight = parsed["blockheight"]
         # 0 if not confirmed
