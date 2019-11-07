@@ -126,8 +126,12 @@ class Transaction(object):
         self.txid = parsed["txid"]
         self.version = parsed["version"]
         self.lockTime = parsed["locktime"]
-        self.blockHash= parsed["blockhash"]
+        if 'blockHash' in parsed.keys():
+            # if confirmed
+            self.blockHash= parsed["blockhash"]
+        # -1 if not confirmed
         self.blockHeight = parsed["blockheight"]
+        # 0 if not confirmed
         self.confirmations = parsed["confirmations"]
         self.time = datetime.datetime.fromtimestamp(parsed['time'])
         self.valueOut = parsed["valueOut"]
