@@ -307,7 +307,7 @@ class InsightApi(object):
         """
         @param addresses: The addresses we wish to get transactions from
         @param transactions_from: If we don't want to load the transactions for this address. False by default
-        @type transactions_from: nullable int
+    "Transaction already in block chain"    @type transactions_from: nullable int
         @param transactions_to: Load the transactions hash until transaction number. Not needed by default
         @type transactions_to: nullable int
         @return: A maximum of 50 transactions, the numbers of transactions, transactions from and to
@@ -384,9 +384,21 @@ class InsightApi(object):
         """
         request_string = 'tx/send'
         request_data = {'rawtx': raw_transaction}
-        res = self.make_post_request(url=request_string, data=request_data)
-        parsed = json.loads(res.text)
-        return parsed['txid']
+        try:
+            res = self.make_post_request(url=request_string, data=request_data)
+            parsed = json.loads(res.text)
+            return True, ""  # parsed['txid']
+        except APIException as e:
+            if e.message.find("Code:-27") == -1:
+                # "Transaction already in block chain. Code:-25"
+                return True, ""
+            else:
+                # such as 'Missing inputs. Code:-25' etc.
+                return False, e.message
+
+
+
+
 
 
     def get_height(self):
