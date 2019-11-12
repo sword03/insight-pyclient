@@ -343,7 +343,7 @@ class InsightApi(object):
 
 
     # extra function to get unspent_outputs
-    def get_unsent_outputs_ex(self, address, amount=0.0):
+    def get_unsent_outputs_ex(self, address, confrim=0, amount=0.0):
         '''
         if amount = 0, return all unspent outputs
         if amount > 0, return enough unspent outputs
@@ -367,10 +367,11 @@ class InsightApi(object):
             # return enough utxos
             sum = 0
             for u in utxos:
-                sum += u.satoshis
-                ret.append(u)
-                if sum >= amount_sat:
-                    break
+                if u.confirmations >= confrim:
+                    sum += u.satoshis
+                    ret.append(u)
+                    if sum >= amount_sat:
+                        break
         return ret
 
 

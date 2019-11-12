@@ -68,3 +68,6 @@ print(s)
 
 ret = client.get_height()
 print(ret)
+
+utxos = client.get_unsent_outputs_ex('mrpZ4yHaJ9HNrh6CZyFtPC2cQ4ztaHevpz', 0.0003)
+p(utxos)
