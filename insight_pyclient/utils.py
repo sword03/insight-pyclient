@@ -7,6 +7,9 @@ Will contain useful functions for the rest of the module
 @license: GNU GENERAL PUBLIC LICENSE Version 3
 """
 
+from decimal import Decimal
+
+BITCOIN_UNITS = 100000000
 
 def satoshi_to_bitcoin(satoshis):
     """
@@ -16,7 +19,7 @@ def satoshi_to_bitcoin(satoshis):
     @return: The converted value
     @rtype: Float
     """
-    return float(satoshis) / 100000000.0
+    return Decimal(satoshis) / Decimal(BITCOIN_UNITS)
 
 
 def bitcoin_to_satoshi(bitcoins):
@@ -27,4 +30,4 @@ def bitcoin_to_satoshi(bitcoins):
     @return: The converted value
     @rtype: Intr
     """
-    return int(bitcoins * 100000000)
+    return int(bitcoins * BITCOIN_UNITS)
