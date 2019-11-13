@@ -7,6 +7,8 @@
 
 import json
 import datetime
+from decimal import Decimal
+from .utils import satoshi_to_bitcoin, bitcoin_to_satoshi
 
 
 class TransactionInput(object):
@@ -35,7 +37,8 @@ class TransactionInput(object):
             self.n = parsed_json["n"]
             self.addr = parsed_json["addr"]
             self.valueSat = parsed_json["valueSat"]
-            self.value = parsed_json["value"]
+            # self.value = parsed_json["value"]
+            self.value = satoshi_to_bitcoin(parsed_json["valueSat"])
             self.doubleSpentTxID = parsed_json["doubleSpentTxID"]
             self.scriptSigAsm = parsed_json["scriptSig"]["asm"]
             self.scriptSigHex = parsed_json["scriptSig"]["hex"]
@@ -62,7 +65,8 @@ class TransactionOutput(object):
     @type scriptPubKey: TransactionOutput.ScriptPublicKey
     """
     def __init__(self, parsed_json):
-        self.value = float(parsed_json["value"])
+        self.value = Decimal(parsed_json["value"])
+        self.valueSat = bitcoin_to_satoshi(Decimal(parsed_json["value"]))
         self.n = parsed_json["n"]
         self.spentTxId = parsed_json["spentTxId"]
         self.spentIndex = parsed_json["spentIndex"]
@@ -126,7 +130,7 @@ class Transaction(object):
         self.txid = parsed["txid"]
         self.version = parsed["version"]
         self.lockTime = parsed["locktime"]
-        if 'blockHash' in parsed.keys():
+        if 'blockhash' in parsed.keys():
             # if confirmed
             self.blockHash= parsed["blockhash"]
         else:
@@ -136,16 +140,8 @@ class Transaction(object):
         # 0 if not confirmed
         self.confirmations = parsed["confirmations"]
         self.time = datetime.datetime.fromtimestamp(parsed['time'])
-        self.valueOut = parsed["valueOut"]
         self.size = parsed["size"]
-        #
-        if 'valueIn' in parsed.keys():
-            self.valueIn = parsed["valueIn"]
-        #
-        if 'fees' in parsed.keys():
-            self.fees = parsed["fees"]
-        else:
-            self.fees = 0
+
         self.inputs = []
         self.outputs = []
 
@@ -153,6 +149,37 @@ class Transaction(object):
             self.outputs.append(TransactionOutput(item))
         for item in parsed["vin"]:
             self.inputs.append(TransactionInput(item))
+
+        # abandon for precision
+        #if 'fees' in parsed.keys():
+        #    self.fees = parsed["fees"]
+        #else:
+        #    self.fees = 0
+        #
+        #self.valueOut = parsed["valueOut"]
+        #if 'valueIn' in parsed.keys():
+        #    self.valueIn = parsed["valueIn"]
+        self.feesSat, self.valueInSat, self.valueOutSat = self.recalculate()
+        self.fees, self.valueIn, self.valueOut = satoshi_to_bitcoin(self.feesSat), satoshi_to_bitcoin(self.valueInSat), satoshi_to_bitcoin(self.valueOutSat)
+
+
+    def recalculate(self):
+        value_in_sat = 0
+        value_out_sat = 0
+        for inp in self.inputs:
+            if not inp.is_coinbase():
+                value_in_sat += inp.valueSat
+        for out in self.outputs:
+            if out.include_address():
+                value_out_sat += out.valueSat
+
+        if self.inputs[0].is_coinbase():
+            # coinbase
+            return 0, 0, value_out_sat
+        else:
+            # not coinbase
+            fee_unit = value_in_sat - value_out_sat
+            return fee_unit, value_in_sat, value_out_sat
 
     def gain_for_address(self, address):
         """
